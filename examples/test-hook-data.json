@@ -1,0 +1,9 @@
+{
+  "session_id": "test-session-123",
+  "transcript_path": "/home/james/projects/misc/claude-notify/.claude/tmp/test-session-123/transcript.txt",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "rm -rf /important/files",
+    "description": "Delete important files"
+  }
+}
