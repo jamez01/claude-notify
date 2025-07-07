@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claude-notify"
+dynamic = ["version"]
+description = "Cross-platform notification system for Claude Code hooks with intelligent project detection"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "jamez01", email = "james@example.com"}
+]
+keywords = ["claude", "ai", "notifications", "hooks", "cross-platform", "desktop"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development",
+    "Topic :: System :: Monitoring",
+    "Topic :: Communications",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "plyer>=2.1",
+    "click>=8.1.0",
+    "pyyaml>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jamez01/claude-notify"
+Repository = "https://github.com/jamez01/claude-notify.git"
+Issues = "https://github.com/jamez01/claude-notify/issues"
+
+[project.scripts]
+claude-notify = "claude_notify.cli:main"
+
+[tool.setuptools_scm]
+write_to = "claude_notify/_version.py"
