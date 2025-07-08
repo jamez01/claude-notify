@@ -3,14 +3,16 @@
 import click
 import time
 import sys
+from pathlib import Path
 from typing import Optional
 from .notifier import ClaudeNotifier
 from .config import load_config, save_config, get_default_config
 from .hook_handler import HookHandler
+from .session_monitor import ClaudeSessionMonitor
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="claude-notify")
+@click.version_option(version="0.1.1", prog_name="claude-notify")
 def cli():
     """Claude Notify - Cross-platform notifications for Claude"""
     pass
@@ -67,41 +69,89 @@ def send(title: str, message: str, urgency: str, timeout: int, sound: bool):
 @click.option(
     "--interval", "-i",
     type=int,
-    default=300,
-    help="Check interval in seconds (default: 300)"
+    default=30,
+    help="Check interval in seconds (default: 30)"
 )
 @click.option(
-    "--message", "-m",
-    default="Claude is waiting for your response",
-    help="Notification message"
+    "--all-projects", "-a",
+    is_flag=True,
+    help="Monitor all Claude projects, not just current directory"
 )
-def watch(interval: int, message: str):
+@click.option(
+    "--verbose", "-v",
+    is_flag=True,
+    help="Show detailed monitoring information"
+)
+def watch(interval: int, all_projects: bool, verbose: bool):
     """Watch for Claude activity and notify when attention is needed"""
     config = load_config()
     notifier = ClaudeNotifier()
+    monitor = ClaudeSessionMonitor()
     
-    click.echo(f"Watching for Claude activity (checking every {interval} seconds)...")
-    click.echo("Press Ctrl+C to stop")
+    # Track which sessions we've already notified about
+    notified_sessions = set()
+    
+    click.echo("🔍 Starting Claude session monitor...")
+    click.echo(f"📁 Monitoring: {'All projects' if all_projects else 'Current project only'}")
+    click.echo(f"⏱️  Check interval: {interval} seconds")
+    click.echo("Press Ctrl+C to stop\n")
     
     try:
         while True:
-            # This is where you would check for Claude activity
-            # For now, we'll simulate with a simple timer
+            # Check for sessions needing attention
+            sessions = monitor.check_sessions()
+            
+            # Filter to current project if not monitoring all
+            if not all_projects and sessions:
+                cwd = str(Path.cwd())
+                sessions = [s for s in sessions if s["project_path"] == cwd]
+            
+            # Process sessions needing attention
+            for session in sessions:
+                session_key = session["transcript_path"]
+                
+                # Only notify once per session unless it changes again
+                if session_key not in notified_sessions:
+                    # Send notification
+                    project_name = session["project"]
+                    reason = session["reason"]
+                    
+                    success = notifier.send_notification(
+                        title=f"Claude needs attention - {project_name}",
+                        message=f"{reason}\nProject: {project_name} ({session['project_path']})",
+                        urgency="normal" if "question" not in reason.lower() else "critical",
+                        timeout=config.get("timeout", 10),
+                        sound=config.get("sound", True)
+                    )
+                    
+                    if success:
+                        notified_sessions.add(session_key)
+                        click.echo(f"🔔 [{time.strftime('%H:%M:%S')}] Notification sent for {project_name}: {reason}")
+                    else:
+                        click.echo(f"❌ [{time.strftime('%H:%M:%S')}] Failed to send notification for {project_name}")
+                    
+                    if verbose:
+                        click.echo(f"   📄 Transcript: {session['transcript_path']}")
+                        click.echo(f"   🕐 Last update: {session['last_update']}")
+            
+            # Clear notified sessions if their state changes (file modified again)
+            current_states = monitor.transcript_states
+            notified_sessions = {
+                session for session in notified_sessions
+                if session in current_states and 
+                current_states[session].get("needs_attention", False)
+            }
+            
+            if verbose and not sessions:
+                click.echo(f"[{time.strftime('%H:%M:%S')}] No sessions need attention")
+            
+            # Wait for next check
             time.sleep(interval)
             
-            # Send notification
-            notifier.send_notification(
-                title="Claude needs your attention",
-                message=message,
-                urgency="normal",
-                timeout=config.get("timeout", 10),
-                sound=config.get("sound", True)
-            )
-            
-            click.echo(f"Notification sent at {time.strftime('%Y-%m-%d %H:%M:%S')}")
-            
     except KeyboardInterrupt:
-        click.echo("\nStopping watch mode...")
+        click.echo("\n\n✋ Stopping watch mode...")
+        click.echo(f"📊 Monitored {len(monitor.transcript_states)} session(s)")
+        click.echo("👋 Goodbye!")
 
 
 @cli.command()

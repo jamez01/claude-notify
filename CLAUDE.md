@@ -65,18 +65,31 @@ claude-notify check
 # Send a test notification
 claude-notify send --title "Test" --message "Testing claude-notify"
 
+# Test watch mode functionality
+python examples/test-watch-mode.py
+
 # Run the example script
 python examples/example_usage.py
+
+# Test real-time monitoring (in separate terminal)
+claude-notify watch --verbose
 ```
 
 ### CLI Commands
 - `claude-notify send`: Send a notification immediately
-- `claude-notify watch`: Run in watch mode with periodic notifications
+- `claude-notify watch`: Monitor Claude sessions for activity requiring attention
 - `claude-notify hook`: Process Claude Code hook events (reads JSON from stdin)
 - `claude-notify check`: Check system dependencies
 - `claude-notify config show`: Display current configuration
 - `claude-notify config set <key> <value>`: Update configuration
 - `claude-notify config reset`: Reset to default configuration
+
+### Watch Mode Features
+- **Real-time monitoring**: Checks transcript files for changes every 30 seconds (configurable)
+- **Smart pattern detection**: Identifies when Claude is waiting for input, asking questions, or encountering errors
+- **Project-aware**: Shows which specific project needs attention
+- **One-time notifications**: Won't spam you with repeated alerts for the same session
+- **Multi-project support**: Can monitor all Claude projects or just the current directory
 
 ### Claude Hook Integration
 The application is designed to work as a Claude Code hook. Key features:

@@ -151,15 +151,28 @@ claude-notify send --no-sound
 
 #### Watch mode
 
-Run in watch mode to get periodic notifications:
+Monitor Claude sessions for activity that requires your attention:
 
 ```bash
-# Default interval (5 minutes)
+# Monitor current project (checks every 30 seconds)
 claude-notify watch
 
-# Custom interval (2 minutes)
-claude-notify watch --interval 120
+# Monitor all Claude projects
+claude-notify watch --all-projects
+
+# Custom check interval with verbose output
+claude-notify watch --interval 10 --verbose
+
+# Monitor specific project
+cd /path/to/project && claude-notify watch
 ```
+
+Watch mode features:
+- **Real-time monitoring** of Claude transcript files
+- **Smart detection** of when Claude needs your input
+- **Project-aware** notifications showing which project needs attention
+- **Pattern matching** for questions, waiting states, and errors
+- **One-time notifications** per session (won't spam you)
 
 ### Configuration
 

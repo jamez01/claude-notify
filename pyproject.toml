@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "claude-notify"
-dynamic = ["version"]
+version = "0.1.1"
 description = "Cross-platform notification system for Claude Code hooks with intelligent project detection"
 readme = "README.md"
 requires-python = ">=3.7"
